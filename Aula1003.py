@@ -9,7 +9,7 @@ for alu in range (0, len(alunos)):
 
 #ex 32
 
-nome = input("Digite o nome ")
+"""nome = input("Digite o nome ")
 idade = int(input("Digite a idade"))
 sexo = bool(input("Digite o sexo"))
 
@@ -20,4 +20,10 @@ elif(sexo == True and idade > 25 ):
 elif((sexo == True or sexo == False)and (idade > 10 and idade < 15 )):
     print("Você foi aceito!")
 else:
-    print("Você não foi aceito.")
+    print("Você não foi aceito.")"""
+
+#ex1 lista 2
+
+numero = [0] * 10
+for i in range (0, len(numero)):
+   print(numero[i]) 
