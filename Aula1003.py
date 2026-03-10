@@ -1,3 +1,4 @@
+#Simplificar código do professor
 """alunos = [""] * 5
 for i in range (0, len(alunos)):
     alunos[i] = input("Informe o nome do aluno")
@@ -24,6 +25,47 @@ else:
 
 #ex1 lista 2
 
-numero = [0] * 10
+"""numero = [0] * 10
 for i in range (0, len(numero)):
-   print(numero[i]) 
+   print(numero[i]) """
+
+#ex2 lista 2
+"""num = 1
+while(num < 21):
+    print(num)
+    num = num + 1"""
+
+#ex3 lista 2
+"""num1 = int(input("Digite um número"))
+num2 = int(input("Digite um número"))
+
+
+
+def somaDeValores(a, b):
+  soma = a + b
+  print("A soma é: ", soma)
+
+
+somaDeValores(num1, num2)"""
+
+#ex4 lista 2
+
+"""cidades = [""] * 5
+cidades[0] = "Paranavaí"
+cidades[1] = "Umuarama"
+cidades[2] = "Marilena"
+cidades[3] = "Maringá"
+cidades[4] = "Cianorte"
+
+for i in range (0, len(cidades)):
+    print(cidades[i])"""
+
+#ex5 lista 2
+"""def verifica_par(a):
+    if (a % 2 == 0):
+        return True
+    else:
+        return False
+
+num = int(input("Digite um número"))
+verifica_par(num)"""
