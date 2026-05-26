@@ -65,3 +65,4 @@ n1 = input("Informe um número para a base")
 n2 = input("Informe um número para o expoente")
 
 Calculadora_b.potencia(n1, n2)
+Calculadora_b.raiz_quadrada(81)
