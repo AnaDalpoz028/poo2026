@@ -44,15 +44,15 @@ class Combustivel(arcade.Sprite):
         self.center_y += self.change_y
 
         #parar o personagem antes dele sair da tela
-        if(self.center_x > 800):
+        if(self.right > 800):
             self.change_x = 0
-        elif(self.center_x < 0):
+        elif(self.left < 0):
             self.change_x = 0
         
-        if(self.center_y > 600):
+        if(self.top > 600):
             self.change_y = 0
-        elif(self.center_y < 0):
-            self.change__y = 0     
+        elif(self.bottom < 0):
+            self.change_y = 0     
         
 class Bomba(arcade.Sprite):
     def __init__(self):
@@ -68,7 +68,7 @@ class JanelaJogo(arcade.Window):
          #cor RGB (vermelho, verde, azul)
          arcade.set_background_color(  (0, 0, 0)  )
         #definir movimento
-         self.movimento = 1
+         self.movimento = 3
         #criar personagem
          self.personagem = Player()
          self.combustivel = Combustivel()
