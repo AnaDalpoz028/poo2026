@@ -1,4 +1,10 @@
 import arcade
+import random
+
+#criar constantes
+Altura = 600
+Largura = 800
+Titulo = "Meu Jogo"
 
 #personagem
 class Player(arcade.Sprite):
@@ -21,38 +27,44 @@ class Player(arcade.Sprite):
             self.texture = self.textura_esquerda
 
         #parar o personagem antes dele sair da tela
-        if(self.right > 800):
+        if(self.right > Largura):
             self.change_x = 0
+            self.right = Largura
         elif(self.left < 0):
             self.change_x = 0
+            self.left = 0
         
-        if(self.top > 600):
+        if(self.top > Altura):
             self.change_y = 0
+            self.top = Altura
         elif(self.bottom < 0):
             self.change_y = 0
+            self.bottom = 0
 
 
      
-
+#Cria a classe do combustivel que herda da classe Sprite do Arcade
 class Combustivel(arcade.Sprite):
+    #O método init é o construtor, onde fica as caracteristicas do personagem (objeto)
     def __init__(self):
         super().__init__("combustivel.png", scale= 0.10)  
-
+    # O update é chamado  a cada frame do jogo, ele atualiza o personagem (faz andar, etc)
     def update(self, delta_time):
         #adicionar movimentação no eixo x e y
         self.center_x += self.change_x
         self.center_y += self.change_y
 
         #parar o personagem antes dele sair da tela
-        if(self.right > 800):
-            self.change_x = 0
+        #temos os lados right, left, top e bottom
+        if(self.right > Largura):
+            self.change_x *= -1 #faz o efeito rebot, o pérsonagem bate na borda da tela e volta
         elif(self.left < 0):
-            self.change_x = 0
+            self.change_x *= -1
         
-        if(self.top > 600):
-            self.change_y = 0
+        if(self.top > Altura):
+            self.change_y *= -1
         elif(self.bottom < 0):
-            self.change_y = 0     
+            self.change_y *= -1   
         
 class Bomba(arcade.Sprite):
     def __init__(self):
@@ -68,31 +80,43 @@ class JanelaJogo(arcade.Window):
          #cor RGB (vermelho, verde, azul)
          arcade.set_background_color(  (0, 0, 0)  )
         #definir movimento
-         self.movimento = 3
+         self.movimento = 5
         #criar personagem
          self.personagem = Player()
          self.combustivel = Combustivel()
          self.bomba = Bomba()
          #posicionar ele na tela
-         self.personagem.center_x = 150
-         self.personagem.center_y = 58
+         self.personagem.center_x = 0
+         self.personagem.center_y = 0
          self.combustivel.center_x = 240
          self.combustivel.center_y = 80
          self.bomba.center_x = 200
          self.bomba.center_y = 200
-
+        #fazer o personagem andar
          self.combustivel.change_x = self.movimento
          self.combustivel.change_y = self.movimento
 
-         self.personagem.change_x = self.movimento
-         self.personagem.change_y = self.movimento
-
+    
          
 
         #criar lista de personagens
          self.sprite_jogador = arcade.SpriteList()
          self.sprite_combustivel = arcade.SpriteList()
          self.sprite_bomba = arcade.SpriteList()
+
+        #laço de repetição criar moedas(combustivel)
+         for i in range(25):  # quantidade de moedas
+             combustivel1 = Combustivel()
+
+             combustivel1.center_x = random.randint(50, Largura - 50)
+             combustivel1.center_y = random.randint(50, Altura - 50)
+
+             combustivel1.change_x = random.choice([-2, 2])
+             combustivel1.change_y = random.choice([-2, 2])
+
+             self.sprite_combustivel.append(combustivel1)
+
+
 
         #adicionar o personagem no grupo de sprites
          self.sprite_jogador.append(self.personagem)
@@ -112,9 +136,38 @@ class JanelaJogo(arcade.Window):
     #atualiza a lógica de jogo e das coisas q estão na tela
     def on_update(self, delta_time):
         #atualizar as listas de sprites, o que chama o método update 
+        #Delta time é o tempo de execussão do jogo, para igualar em diferentes computadores
         self.sprite_jogador.update(delta_time)
         self.sprite_combustivel.update(delta_time)
         self.sprite_bomba.update(delta_time)
+
+    #gerenciar o teclado (teclas pressionadas)
+    def on_key_press(self, key, modifiers):
+        #key = seta pressionada
+        #
+        if (key == arcade.key.LEFT):
+            self.personagem.change_x -= self.movimento
+        if (key == arcade.key.RIGHT):
+            self.personagem.change_x += self.movimento
+        if (key == arcade.key.UP):
+            self.personagem.change_y += self.movimento
+        if(key == arcade.key.DOWN):
+           self.personagem.change_y -= self.movimento
+
+        if(key == arcade.key.ESCAPE):
+            arcade.close_window()
+
+
+    #evento ao soltar as teclas, para ele parar de andar qnd a tecla for solta
+    def on_key_release(self, key, modifiers):
+        if (key == arcade.key.LEFT or key == arcade.key.RIGHT ):
+            self.personagem.change_x = 0
+        if (key == arcade.key.UP or key == arcade.key.DOWN):
+            self.personagem.change_y = 0
+
+
+
+
     
 def main():
     jogo = JanelaJogo()
