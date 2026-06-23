@@ -88,41 +88,107 @@ class Combustivel_Especial(arcade.Sprite):
         elif(self.bottom < 0):
             self.change_y *= -1
 
-        
-class Bomba(arcade.Sprite):
+class Inimigo(arcade.Sprite):
     def __init__(self):
-        super().__init__("bomba.png", scale = 0.20)
-        self.textura_bomba = arcade.load_texture("bomba.png")
-        self.textura_explosao = arcade.load_texture("explosao.png")
+        super().__init__("inimigo.png", 0.04) 
+
+        self.atingido = False
+
+
+
+class Bomba(arcade.Sprite):
+    # Adicionamos 'textura_explosao' aqui nos parâmetros:
+    def __init__(self, textura_explosao):
+        # Inicializa o sprite com a imagem normal da bomba
+        super().__init__("bomba.png", 0.09) 
+        
+        # Guarda a textura recebida e cria as variáveis de controle
+        self.textura_explosao = textura_explosao
+        self.explodindo = False
+        self.tempo_explosao = 0.0
         
     
     def update(self, delta_time):
     #adicionar movimentação no eixo x e y
+        # Faz a bomba se mover na tela usando a velocidade dela
         self.center_x += self.change_x
         self.center_y += self.change_y
 
-        if(self.textura_bomba ):
-            self.texture = self.textura_explosao
-    
-        
-
-        #parar o personagem antes dele sair da tela
-        #temos os lados right, left, top e bottom
-        if(self.right > Largura):
-            self.change_x *= -1 #faz o efeito rebot, o pérsonagem bate na borda da tela e volta
-        elif(self.left < 0):
+        # Lógica para rebater nas paredes (se você tiver)
+        if self.left < 0 or self.right > 800:
             self.change_x *= -1
-        
-        if(self.top > Altura):
+        if self.bottom < 0 or self.top > 600:
             self.change_y *= -1
-        elif(self.bottom < 0):
-            self.change_y *= -1
-    
 
-class JanelaJogo(arcade.Window):
+#criar tela da vitória
+class Tela_vitoria(arcade.View, pontuacao_final, tempo_final):
+    def __init__(self):
+        
+        super().__init__()
+        self.textura_fundo_inicial = arcade.load_texture("rua.jpg")
+
+        self.pontuacao = pontuacao_final
+        self.cronometro = tempo_final 
+
+    def on_draw(self):
+        self.clear()
+        arcade.draw_texture_rect(
+            texture = self.textura_fundo_inicial,
+            rect=arcade.XYWH(
+                x=Largura/2,
+                y=Altura/2,
+                width=Largura,
+                height=Altura
+
+            )
+        ) 
+
+        arcade.draw_text("END GAME", Largura//2, 400, arcade.color.WHITE, 18, anchor_x= "center")
+        arcade.draw_text(f"Sua Pontuação foi {self.pontuacao}!", 280, 100, arcade.color.WHITE, 18, 50)
+        arcade.draw_text(f"TEMPO: {self.cronometro}", 280, 100, arcade.color.WHITE, 18, 50) 
+        
+
+#criar a tela inicial
+class Tela_inicial(arcade.View):
+    def __init__(self):
+        self.textura_fundo_inicial = arcade.load_texture("rua.jpg")
+        super().__init__()
+
+    def on_draw(self):
+        self.clear()
+        #desenhar cenário do fundo
+        arcade.draw_texture_rect(
+            texture = self.textura_fundo_inicial,
+            rect=arcade.XYWH(
+                x=Largura/2,
+                y=Altura/2,
+                width=Largura,
+                height=Altura
+
+            )
+        )
+
+        arcade.draw_text("JOGO - Relâmpago Marquinhos", Largura//2, 400, arcade.color.WHITE, 18, anchor_x= "center")
+        arcade.draw_text("Pressione [J] para jogar", 280, 100, arcade.color.WHITE, 18, 50)
+        arcade.draw_text("Pressione [ESC] para sair", 280, 150, arcade.color.WHITE, 18, 200 )
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.J or key == arcade.key.ENTER:
+            tela_jogo = Telajogo()
+            self.window.show_view(tela_jogo)
+        elif key == arcade.key.ESCAPE:
+            tela_inicial = Tela_inicial()
+            self.window.show_view(tela_inicial)
+
+
+
+        
+
+class Telajogo(arcade.View):
     def __init__(self):
          self.textura_fundo = arcade.load_texture("cenario.jpg")
-         super().__init__(800, 600, "Meu Jogo")
+         self.textura_explosao = arcade.load_texture("explosao.png")
+         super().__init__()
          #cor RGB (vermelho, verde, azul)
          arcade.set_background_color(  (0, 0, 0)  )
         #definir movimento
@@ -134,7 +200,8 @@ class JanelaJogo(arcade.Window):
         #criar personagem
          self.personagem = Player()
          self.combustivel = Combustivel()
-         self.bomba = Bomba()
+         self.bomba = Bomba(self.textura_explosao)
+         self.inimigo = Inimigo()
          #posicionar ele na tela
          self.personagem.center_x = 0
          self.personagem.center_y = 0
@@ -142,6 +209,9 @@ class JanelaJogo(arcade.Window):
          self.combustivel.center_y = 80
          self.bomba.center_x = 200
          self.bomba.center_y = 200
+
+         self.inimigo.center_x = 10
+         self.inimigo.center_y = 20
         #fazer o personagem andar
          self.combustivel.change_x = self.movimento
          self.combustivel.change_y = self.movimento
@@ -155,6 +225,16 @@ class JanelaJogo(arcade.Window):
          self.sprite_jogador = arcade.SpriteList()
          self.sprite_combustivel = arcade.SpriteList()
          self.sprite_bomba = arcade.SpriteList()
+         self.sprite_inimigo = arcade.SpriteList()
+
+         for a in range(5):
+             inimigo1 = Inimigo()
+             inimigo1.center_x = random.randint(50, Largura - 50)
+             inimigo1.center_y = random.randint(50, Altura - 50)
+
+             
+
+             self.sprite_inimigo.append(inimigo1)
 
         #laço de repetição criar moedas(combustivel)
          for i in range(25):  # quantidade de moedas
@@ -168,16 +248,13 @@ class JanelaJogo(arcade.Window):
 
              self.sprite_combustivel.append(combustivel1)
 
-         for b in range(15): #quantidade bombas
-             bomba1 = Bomba()
-
-             bomba1.center_x = random.randint(50, Largura - 50)
-             bomba1.center_y = random.randint(50, Altura - 40)
-
-             bomba1.change_x = random.choice([-2, 2])
-             bomba1.change_y = random.choice([-2, 2])
-
-             self.sprite_bomba.append(bomba1)
+         for b in range(15): 
+            bomba1 = Bomba(self.textura_explosao) # Passa a textura para cada uma
+            bomba1.center_x = random.randint(50, 800 - 50)
+            bomba1.center_y = random.randint(50, 600 - 40)
+            bomba1.change_x = random.choice([-2, 2])
+            bomba1.change_y = random.choice([-2, 2])
+            self.sprite_bomba.append(bomba1)
          
 
 
@@ -186,6 +263,7 @@ class JanelaJogo(arcade.Window):
          self.sprite_jogador.append(self.personagem)
          self.sprite_combustivel.append(self.combustivel)
          self.sprite_bomba.append(self.bomba)
+         self.sprite_inimigo.append(self.inimigo)
          
 
     #metodo para desenhar na tela
@@ -206,6 +284,7 @@ class JanelaJogo(arcade.Window):
         self.sprite_jogador.draw()
         self.sprite_combustivel.draw()
         self.sprite_bomba.draw()
+        self.sprite_inimigo.draw()
 
         #escrever pontuação na tela
         arcade.draw_text(f"PONTUAÇÃO: {self.pontuacao}", 10, 570, arcade.color.WHITE, 14)
@@ -222,6 +301,7 @@ class JanelaJogo(arcade.Window):
         self.sprite_jogador.update(delta_time)
         self.sprite_combustivel.update(delta_time)
         self.sprite_bomba.update(delta_time)
+        self.sprite_inimigo.update(delta_time)
 
         #fazer o combustivel sumir qnd o carrinho passar por ele
         combustivel_colidido = arcade.check_for_collision_with_list(self.personagem, self.sprite_combustivel)
@@ -236,24 +316,34 @@ class JanelaJogo(arcade.Window):
 
         #fazera bomba sumir qnd o carrinho passar por ele
         bomba_colidida = arcade.check_for_collision_with_list(self.personagem, self.sprite_bomba)
-        for bomba in bomba_colidida:
-            if bomba_colidida:
-                # Mudar imagem
-                self.texture = self.textura_explosao
-                bomba.remove_from_sprite_lists()  
-                                    
+        for b in bomba_colidida:
+            if not b.explodindo:
+                b.explodindo = True
+                b.texture = b.textura_explosao # Transforma na imagem de explosão!
+                self.pontuacao -= 1 # Retira pontuação apenas uma vez
+
+         #fazera inimigo sumir qnd o carrinho passar por ele
+        inimigo_colidido = arcade.check_for_collision_with_list(self.personagem, self.sprite_inimigo)
+        for inimigo in inimigo_colidido:
+            if not inimigo.atingido:
+                inimigo.atingido = True
+                inimigo.remove_from_sprite_lists()
                 
-                # Desconta um combustível
-                self.combustiveis_restantes -= 1
-                
-                # Se pegou todas, para o tempo
-                if self.combustiveis_restantes == 0:
-                    self.cronometro_rodando = False
+                # Perde 3 pontos
+                self.pontuacao -= 3
+        
+
+        # Controla o tempo de 1 segundo para sumir com as bombas explodidas
+        for b in self.sprite_bomba:
+            if b.explodindo:
+                b.tempo_explosao += delta_time
+                if b.tempo_explosao >= 1.0:
+                    b.remove_from_sprite_lists()
         
 
 
 
-        self.pontuacao -= 1
+        
             
             #diminuir pontuação qnd bater na bomba
             
@@ -262,6 +352,16 @@ class JanelaJogo(arcade.Window):
         
         if self.cronometro_rodando:
             self.cronometro += delta_time
+
+       
+
+
+        if len(self.sprite_combustivel) == 0:
+            # 1. Criamos a tela de vitória passando a pontuação e o cronômetro atuais
+            tela_fim = Tela_vitoria(self.pontuacao, self.cronometro)
+            
+            # 2. Mandamos a janela do jogo mudar para essa nova tela
+            self.window.show_view(tela_fim)
             
         
 
@@ -295,7 +395,13 @@ class JanelaJogo(arcade.Window):
 
     
 def main():
-    jogo = JanelaJogo()
+    #criar janela principal do jogo com os parametros
+    jogo = arcade.Window(Largura, Altura, Titulo)
+    #cria uma tela inicial
+    tela_inicial = Tela_inicial()
+
+    jogo.show_view(tela_inicial)
+    
     arcade.run()
 
 
