@@ -121,8 +121,8 @@ class Bomba(arcade.Sprite):
             self.change_y *= -1
 
 #criar tela da vitória
-class Tela_vitoria(arcade.View, pontuacao_final, tempo_final):
-    def __init__(self):
+class Tela_vitoria(arcade.View):
+    def __init__(self, pontuacao_final, tempo_final):
         
         super().__init__()
         self.textura_fundo_inicial = arcade.load_texture("rua.jpg")
