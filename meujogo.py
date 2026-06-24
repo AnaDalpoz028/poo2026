@@ -49,22 +49,7 @@ class Combustivel(arcade.Sprite):
     def __init__(self):
         super().__init__("combustivel.png", scale= 0.10)  
     # O update é chamado  a cada frame do jogo, ele atualiza o personagem (faz andar, etc)
-    def update(self, delta_time):
-        #adicionar movimentação no eixo x e y
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        #parar o personagem antes dele sair da tela
-        #temos os lados right, left, top e bottom
-        if(self.right > Largura):
-            self.change_x *= -1 #faz o efeito rebot, o pérsonagem bate na borda da tela e volta
-        elif(self.left < 0):
-            self.change_x *= -1
-        
-        if(self.top > Altura):
-            self.change_y *= -1
-        elif(self.bottom < 0):
-            self.change_y *= -1  
+    
 
 class Combustivel_Especial(arcade.Sprite):
     #O método init é o construtor, onde fica as caracteristicas do personagem (objeto)
@@ -90,7 +75,7 @@ class Combustivel_Especial(arcade.Sprite):
 
 class Inimigo(arcade.Sprite):
     def __init__(self):
-        super().__init__("inimigo.png", 0.04) 
+        super().__init__("inimigo.png", 0.06) 
 
         self.atingido = False
 
@@ -144,7 +129,7 @@ class Tela_vitoria(arcade.View):
         ) 
 
         arcade.draw_text("END GAME", Largura//2, 400, arcade.color.WHITE, 18, anchor_x= "center")
-        arcade.draw_text(f"Sua Pontuação foi {self.pontuacao}!", 280, 100, arcade.color.WHITE, 18, 50)
+        arcade.draw_text(f"Sua Pontuação foi {self.pontuacao}!", 280, 150, arcade.color.WHITE, 18, 50)
         arcade.draw_text(f"TEMPO: {self.cronometro}", 280, 100, arcade.color.WHITE, 18, 50) 
         
 
