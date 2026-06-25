@@ -48,29 +48,16 @@ class Combustivel(arcade.Sprite):
     #O método init é o construtor, onde fica as caracteristicas do personagem (objeto)
     def __init__(self):
         super().__init__("combustivel.png", scale= 0.10)  
-    # O update é chamado  a cada frame do jogo, ele atualiza o personagem (faz andar, etc)
-    def update(self, delta_time):
-        #adicionar movimentação no eixo x e y
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        #parar o personagem antes dele sair da tela
-        #temos os lados right, left, top e bottom
-        if(self.right > Largura):
-            self.change_x *= -1 #faz o efeito rebot, o pérsonagem bate na borda da tela e volta
-        elif(self.left < 0):
-            self.change_x *= -1
-        
-        if(self.top > Altura):
-            self.change_y *= -1
-        elif(self.bottom < 0):
-            self.change_y *= -1  
+    
+     
 
 class Combustivel_Especial(arcade.Sprite):
     #O método init é o construtor, onde fica as caracteristicas do personagem (objeto)
     def __init__(self):
-        super().__init__("combustivel.png", scale= 0.10)  
+        super().__init__("raio.png", scale= 0.05)  
     # O update é chamado  a cada frame do jogo, ele atualiza o personagem (faz andar, etc)
+        self.atingido = False
+
     def update(self, delta_time):
         #adicionar movimentação no eixo x e y
         self.center_x += self.change_x
@@ -94,6 +81,18 @@ class Inimigo(arcade.Sprite):
 
         self.atingido = False
 
+    def update(self, delta_time):
+    #adicionar movimentação no eixo x e y
+        # Faz o inimigo se mover na tela 
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+
+        # Lógica para rebater nas paredes 
+        if self.left < 0 or self.right > 800:
+            self.change_x *= -1
+        if self.bottom < 0 or self.top > 600:
+            self.change_y *= -1
+
 
 
 class Bomba(arcade.Sprite):
@@ -108,17 +107,7 @@ class Bomba(arcade.Sprite):
         self.tempo_explosao = 0.0
         
     
-    def update(self, delta_time):
-    #adicionar movimentação no eixo x e y
-        # Faz a bomba se mover na tela usando a velocidade dela
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        # Lógica para rebater nas paredes (se você tiver)
-        if self.left < 0 or self.right > 800:
-            self.change_x *= -1
-        if self.bottom < 0 or self.top > 600:
-            self.change_y *= -1
+    
 
 #criar tela da vitória
 class Tela_vitoria(arcade.View):
@@ -143,9 +132,20 @@ class Tela_vitoria(arcade.View):
             )
         ) 
 
-        arcade.draw_text("END GAME", Largura//2, 400, arcade.color.WHITE, 18, anchor_x= "center")
-        arcade.draw_text(f"Sua Pontuação foi {self.pontuacao}!", 280, 150, arcade.color.WHITE, 18, 50)
-        arcade.draw_text(f"TEMPO: {self.cronometro}", 280, 100, arcade.color.WHITE, 18, 50) 
+        arcade.draw_text("END GAME", Largura//2, 400, arcade.color.WHITE, 35, anchor_x= "center")
+        arcade.draw_text(f"Sua Pontuação foi {self.pontuacao}!", 430, 250, arcade.color.WHITE, 18, 50)
+        arcade.draw_text(f"TEMPO: {self.cronometro: .0f}s", 430, 200, arcade.color.WHITE, 18, 50) 
+        arcade.draw_text(f"Pressione [J] para jogar novamente!", 430, 150, arcade.color.GREEN, 20, 50)
+        arcade.draw_text(f"Pressione [ESC] para fechar o jogo", 430, 50 , arcade.color.RED, 20, 50)
+
+    def on_key_press(self, key, modifiers):
+         if key ==arcade.key.J:
+            novo_jogo = Telajogo()
+            self.window.show_view(novo_jogo)
+         elif key == arcade.key.ESCAPE:
+             arcade.close_window()
+         
+        
         
 
 #criar a tela inicial
@@ -177,8 +177,8 @@ class Tela_inicial(arcade.View):
             tela_jogo = Telajogo()
             self.window.show_view(tela_jogo)
         elif key == arcade.key.ESCAPE:
-            tela_inicial = Tela_inicial()
-            self.window.show_view(tela_inicial)
+            
+            arcade.close_window()
 
 
 
@@ -202,13 +202,15 @@ class Telajogo(arcade.View):
          self.combustivel = Combustivel()
          self.bomba = Bomba(self.textura_explosao)
          self.inimigo = Inimigo()
+         self.combustivel_especial = Combustivel_Especial()
          #posicionar ele na tela
          self.personagem.center_x = 0
          self.personagem.center_y = 0
          self.combustivel.center_x = 240
          self.combustivel.center_y = 80
-         self.bomba.center_x = 200
-         self.bomba.center_y = 200
+         
+         self.combustivel_especial.center_x = 50
+         self.combustivel_especial.center_y = 60
 
          self.inimigo.center_x = 10
          self.inimigo.center_y = 20
@@ -226,18 +228,35 @@ class Telajogo(arcade.View):
          self.sprite_combustivel = arcade.SpriteList()
          self.sprite_bomba = arcade.SpriteList()
          self.sprite_inimigo = arcade.SpriteList()
+         self.sprite_combustivel_especial = arcade.SpriteList()
 
-         for a in range(5):
+         for a in range(11):
              inimigo1 = Inimigo()
              inimigo1.center_x = random.randint(50, Largura - 50)
              inimigo1.center_y = random.randint(50, Altura - 50)
+
+             inimigo1.change_x = random.choice([-2, 2])
+             inimigo1.change_y = random.choice([-2, 2])
 
              
 
              self.sprite_inimigo.append(inimigo1)
 
+         for e in range(20):
+             combustivelE_1 = Combustivel_Especial()
+
+             combustivelE_1.center_x = random.randint(50, Largura - 50)
+             combustivelE_1.center_y = random.randint(50, Altura - 50)
+
+             combustivelE_1.change_x = random.choice([-2, 2])
+             combustivelE_1.change_y = random.choice([-2, 2])
+
+             
+
+             self.sprite_combustivel_especial.append(combustivelE_1)
+
         #laço de repetição criar moedas(combustivel)
-         for i in range(25):  # quantidade de moedas
+         for i in range(10):  # quantidade de moedas
              combustivel1 = Combustivel()
 
              combustivel1.center_x = random.randint(50, Largura - 50)
@@ -248,12 +267,11 @@ class Telajogo(arcade.View):
 
              self.sprite_combustivel.append(combustivel1)
 
-         for b in range(15): 
+         for b in range(7): 
             bomba1 = Bomba(self.textura_explosao) # Passa a textura para cada uma
             bomba1.center_x = random.randint(50, 800 - 50)
             bomba1.center_y = random.randint(50, 600 - 40)
-            bomba1.change_x = random.choice([-2, 2])
-            bomba1.change_y = random.choice([-2, 2])
+            
             self.sprite_bomba.append(bomba1)
          
 
@@ -264,6 +282,10 @@ class Telajogo(arcade.View):
          self.sprite_combustivel.append(self.combustivel)
          self.sprite_bomba.append(self.bomba)
          self.sprite_inimigo.append(self.inimigo)
+         self.sprite_combustivel_especial.append(self.combustivel_especial)
+
+         self.mensagem_dano = False
+         self.tempo_mensagem_dano = 0.0
          
 
     #metodo para desenhar na tela
@@ -285,32 +307,33 @@ class Telajogo(arcade.View):
         self.sprite_combustivel.draw()
         self.sprite_bomba.draw()
         self.sprite_inimigo.draw()
+        self.sprite_combustivel_especial.draw()
 
         #escrever pontuação na tela
         arcade.draw_text(f"PONTUAÇÃO: {self.pontuacao}", 10, 570, arcade.color.WHITE, 14)
-        arcade.draw_text(f"CRONÔMENTRO: {self.cronometro}", 10, 550, arcade.color.WHITE, 14)
-        
-       
-        
-       
+        arcade.draw_text(f"CRONÔMENTRO: {self.cronometro: .0f}s", 10, 550, arcade.color.WHITE, 14)
+
+        #desenhar msg de dano
+        if self.mostrar_mensagem_dano:
+            arcade.draw_text("DANIFICADO!", 350, 560, arcade.color.RED, 24, True, "center")
+      
+  
         
     #atualiza a lógica de jogo e das coisas q estão na tela
     def on_update(self, delta_time):
         #atualizar as listas de sprites, o que chama o método update 
         #Delta time é o tempo de execussão do jogo, para igualar em diferentes computadores
         self.sprite_jogador.update(delta_time)
-        self.sprite_combustivel.update(delta_time)
-        self.sprite_bomba.update(delta_time)
+        
+        
         self.sprite_inimigo.update(delta_time)
+        self.sprite_combustivel_especial.update(delta_time)
 
         #fazer o combustivel sumir qnd o carrinho passar por ele
         combustivel_colidido = arcade.check_for_collision_with_list(self.personagem, self.sprite_combustivel)
         for combustivel in combustivel_colidido:
             combustivel.remove_from_sprite_lists()
-            if combustivel == Combustivel_Especial:
-                self.pontuacao += 5
-            else:
-                self.pontuacao += 1
+           
             #aumentar pontuação qnd coletar combustivel
             self.pontuacao += 1
 
@@ -319,18 +342,41 @@ class Telajogo(arcade.View):
         for b in bomba_colidida:
             if not b.explodindo:
                 b.explodindo = True
-                b.texture = b.textura_explosao # Transforma na imagem de explosão!
-                self.pontuacao -= 1 # Retira pontuação apenas uma vez
+                b.texture = b.textura_explosao # Transforma na imagem de explosão
+                self.pontuacao -= 3 # Retira pontuação 
 
          #fazera inimigo sumir qnd o carrinho passar por ele
         inimigo_colidido = arcade.check_for_collision_with_list(self.personagem, self.sprite_inimigo)
+
+        for inimigo in self.sprite_inimigo:
+            if inimigo not in inimigo_colidido:
+                inimigo.atingido = False
+
         for inimigo in inimigo_colidido:
             if not inimigo.atingido:
                 inimigo.atingido = True
-                inimigo.remove_from_sprite_lists()
                 
-                # Perde 3 pontos
-                self.pontuacao -= 3
+                #mostrar msg dano
+                self.mostrar_mensagem_dano = True
+                self.tempo_mensagem_dano = 0.0
+
+                
+                
+                # Perde pontos
+                self.pontuacao -= 1
+
+        if self.mostrar_mensagem_dano:
+             self.tempo_mensagem_dano += delta_time
+             if self.tempo_mensagem_dano >= 0.25: # 1 segundo de duração
+                self.mostrar_mensagem_dano = False
+
+        combustivelespecial_colidido = arcade.check_for_collision_with_list(self.personagem, self.sprite_combustivel_especial)
+        for combustivel_especial in combustivelespecial_colidido:
+            if not combustivel_especial.atingido:
+                combustivel_especial.atingido = True
+                combustivel_especial.remove_from_sprite_lists()
+
+                self.pontuacao += 5
         
 
         # Controla o tempo de 1 segundo para sumir com as bombas explodidas
@@ -345,7 +391,7 @@ class Telajogo(arcade.View):
 
         
             
-            #diminuir pontuação qnd bater na bomba
+            
             
 
          #cronometro
@@ -356,7 +402,7 @@ class Telajogo(arcade.View):
        
 
 
-        if len(self.sprite_combustivel) == 0:
+        if len(self.sprite_combustivel_especial) == 0:
             # 1. Criamos a tela de vitória passando a pontuação e o cronômetro atuais
             tela_fim = Tela_vitoria(self.pontuacao, self.cronometro)
             
