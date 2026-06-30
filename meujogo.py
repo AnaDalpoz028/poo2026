@@ -6,6 +6,8 @@ Altura = 600
 Largura = 800
 Titulo = "Meu Jogo"
 
+
+
 #personagem
 class Player(arcade.Sprite):
     def __init__(self):
@@ -77,7 +79,7 @@ class Combustivel_Especial(arcade.Sprite):
 
 class Inimigo(arcade.Sprite):
     def __init__(self):
-        super().__init__("inimigo.png", 0.06) 
+        super().__init__("inimigo.png", 0.08) 
 
         self.atingido = False
 
@@ -114,7 +116,7 @@ class Tela_vitoria(arcade.View):
     def __init__(self, pontuacao_final, tempo_final):
         
         super().__init__()
-        self.textura_fundo_inicial = arcade.load_texture("rua.jpg")
+        self.textura_fundo_inicial = arcade.load_texture("telafinal.png")
 
         self.pontuacao = pontuacao_final
         self.cronometro = tempo_final 
@@ -132,11 +134,10 @@ class Tela_vitoria(arcade.View):
             )
         ) 
 
-        arcade.draw_text("END GAME", Largura//2, 400, arcade.color.WHITE, 35, anchor_x= "center")
-        arcade.draw_text(f"Sua Pontuação foi {self.pontuacao}!", 430, 250, arcade.color.WHITE, 18, 50)
-        arcade.draw_text(f"TEMPO: {self.cronometro: .0f}s", 430, 200, arcade.color.WHITE, 18, 50) 
-        arcade.draw_text(f"Pressione [J] para jogar novamente!", 430, 150, arcade.color.GREEN, 20, 50)
-        arcade.draw_text(f"Pressione [ESC] para fechar o jogo", 430, 50 , arcade.color.RED, 20, 50)
+       
+        arcade.draw_text(f"PONTUAÇÃO: {self.pontuacao}", 510, 230, arcade.color.WHITE, 18, 50,font_name="Courier New", bold=True)
+        arcade.draw_text(f"TEMPO: {self.cronometro: .0f}s", 510, 200, arcade.color.WHITE, 18, 50,font_name="Courier New", bold=True) 
+        
 
     def on_key_press(self, key, modifiers):
          if key ==arcade.key.J:
@@ -151,7 +152,7 @@ class Tela_vitoria(arcade.View):
 #criar a tela inicial
 class Tela_inicial(arcade.View):
     def __init__(self):
-        self.textura_fundo_inicial = arcade.load_texture("rua.jpg")
+        self.textura_fundo_inicial = arcade.load_texture("telainicial.png")
         super().__init__()
 
     def on_draw(self):
@@ -168,9 +169,7 @@ class Tela_inicial(arcade.View):
             )
         )
 
-        arcade.draw_text("JOGO - Relâmpago Marquinhos", Largura//2, 400, arcade.color.WHITE, 18, anchor_x= "center")
-        arcade.draw_text("Pressione [J] para jogar", 280, 100, arcade.color.WHITE, 18, 50)
-        arcade.draw_text("Pressione [ESC] para sair", 280, 150, arcade.color.WHITE, 18, 200 )
+        
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.J or key == arcade.key.ENTER:
@@ -188,6 +187,7 @@ class Telajogo(arcade.View):
     def __init__(self):
          self.textura_fundo = arcade.load_texture("cenario.jpg")
          self.textura_explosao = arcade.load_texture("explosao.png")
+         
          super().__init__()
          #cor RGB (vermelho, verde, azul)
          arcade.set_background_color(  (0, 0, 0)  )
@@ -211,9 +211,9 @@ class Telajogo(arcade.View):
          
          self.combustivel_especial.center_x = 50
          self.combustivel_especial.center_y = 60
-
-         self.inimigo.center_x = 10
-         self.inimigo.center_y = 20
+         #sumir da tela o personagem q tava atrapalhando (ignorar)
+         self.inimigo.center_x = -15
+         self.inimigo.center_y = -15
         #fazer o personagem andar
          self.combustivel.change_x = self.movimento
          self.combustivel.change_y = self.movimento
@@ -230,7 +230,7 @@ class Telajogo(arcade.View):
          self.sprite_inimigo = arcade.SpriteList()
          self.sprite_combustivel_especial = arcade.SpriteList()
 
-         for a in range(11):
+         for a in range(8):
              inimigo1 = Inimigo()
              inimigo1.center_x = random.randint(50, Largura - 50)
              inimigo1.center_y = random.randint(50, Altura - 50)
@@ -315,7 +315,7 @@ class Telajogo(arcade.View):
 
         #desenhar msg de dano
         if self.mostrar_mensagem_dano:
-            arcade.draw_text("DANIFICADO!", 350, 560, arcade.color.RED, 24, True, "center")
+            arcade.draw_text("DANIFICADO!", 350, 560, arcade.color.RED, 24, True, "center", font_name="Impact")
       
   
         
