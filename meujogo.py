@@ -1,17 +1,18 @@
 import arcade
 import random
 
-#criar constantes
+#criar variáveis que serão bastante utilizadas
 Altura = 600
 Largura = 800
 Titulo = "Meu Jogo"
 
 
 
-#personagem
+#criar personagem
 class Player(arcade.Sprite):
     def __init__(self):
-        super().__init__("mcqueen_direita.png", scale=0.10)
+        super().__init__("mcqueen_direita.png", scale=0.10) 
+        #adicionar textura conforme estiver para direita ou esquerda
         self.textura_direita = arcade.load_texture("mcqueen_direita.png")
         self.textura_esquerda = arcade.load_texture("mcqueen_esquerda1.png")
 
@@ -54,7 +55,7 @@ class Combustivel(arcade.Sprite):
      
 
 class Combustivel_Especial(arcade.Sprite):
-    #O método init é o construtor, onde fica as caracteristicas do personagem (objeto)
+   
     def __init__(self):
         super().__init__("raio.png", scale= 0.05)  
     # O update é chamado  a cada frame do jogo, ele atualiza o personagem (faz andar, etc)
@@ -66,7 +67,7 @@ class Combustivel_Especial(arcade.Sprite):
         self.center_y += self.change_y
 
         #parar o personagem antes dele sair da tela
-        #temos os lados right, left, top e bottom
+        
         if(self.right > Largura):
             self.change_x *= -1 #faz o efeito rebot, o pérsonagem bate na borda da tela e volta
         elif(self.left < 0):
@@ -89,7 +90,7 @@ class Inimigo(arcade.Sprite):
         self.center_x += self.change_x
         self.center_y += self.change_y
 
-        # Lógica para rebater nas paredes 
+        #para rebater nas paredes 
         if self.left < 0 or self.right > 800:
             self.change_x *= -1
         if self.bottom < 0 or self.top > 600:
@@ -98,18 +99,55 @@ class Inimigo(arcade.Sprite):
 
 
 class Bomba(arcade.Sprite):
-    # Adicionamos 'textura_explosao' aqui nos parâmetros:
     def __init__(self, textura_explosao):
-        # Inicializa o sprite com a imagem normal da bomba
-        super().__init__("bomba.png", 0.09) 
+        # Carrega a textura inicial
+        self.textura_normal = arcade.load_texture("bomba.png")
+        super().__init__(self.textura_normal, scale=0.09) 
         
-        # Guarda a textura recebida e cria as variáveis de controle
         self.textura_explosao = textura_explosao
         self.explodindo = False
         self.tempo_explosao = 0.0
         
-    
-    
+        # Velocidades
+        self.change_x = random.choice([-2, 2])
+        self.change_y = random.choice([-2, 2])
+
+    def resetar(self):
+        #Faz a voltar ao estado original e mudar de lugar
+        self.explodindo = False
+        self.texture = self.textura_normal  # Restaura a textura de bomba
+        self.tempo_explosao = 0.0
+        
+        # Sorteia nova posição 
+        self.center_x = random.randint(50, Largura - 50)
+        self.center_y = random.randint(50, Altura - 50)
+        
+        # Devolve a velocidade de movimento
+        self.change_x = random.choice([-2, 2])
+        self.change_y = random.choice([-2, 2])
+
+    def update(self, delta_time):
+        # Se explodiu, conta o tempo para chamar o resetar
+        if self.explodindo:
+            self.change_x = 0
+            self.change_y = 0
+            self.tempo_explosao += delta_time
+            
+            # Quando dá 1 segundo, ela reseta sozinha 
+            if self.tempo_explosao >= 1.0:
+                self.resetar()
+            return
+
+        # Movimento normal
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+
+        # Rebater nas bordas
+        if self.left <= 0 or self.right >= Largura:
+            self.change_x *= -1
+        if self.bottom <= 0 or self.top >= Altura:
+            self.change_y *= -1
+
 
 #criar tela da vitória
 class Tela_vitoria(arcade.View):
@@ -137,7 +175,9 @@ class Tela_vitoria(arcade.View):
        
         arcade.draw_text(f"PONTUAÇÃO: {self.pontuacao}", 510, 230, arcade.color.WHITE, 18, 50,font_name="Courier New", bold=True)
         arcade.draw_text(f"TEMPO: {self.cronometro: .0f}s", 510, 200, arcade.color.WHITE, 18, 50,font_name="Courier New", bold=True) 
-        
+
+        if self.pontuacao >= 70:
+            arcade.draw_text(f"PONTUAÇÃO MÁXIMA", 510, 170, arcade.color.WHITE, 18, 50,font_name="Courier New", bold=True)
 
     def on_key_press(self, key, modifiers):
          if key ==arcade.key.J:
@@ -145,8 +185,53 @@ class Tela_vitoria(arcade.View):
             self.window.show_view(novo_jogo)
          elif key == arcade.key.ESCAPE:
              arcade.close_window()
-         
+
+class Tela_Instrucoes(arcade.View): 
+    def __init__(self):
+        self.textura_fundo_instrucoes = arcade.load_texture("tela_instrucoes.png")
+        super().__init__ ()      
+    def on_draw(self):
+        self.clear()
+
+        arcade.draw_texture_rect(
+            texture = self.textura_fundo_instrucoes,
+            rect=arcade.XYWH(
+                x=Largura/2,
+                y=Altura/2,
+                width=Largura,
+                height=Altura
+            )
+        )
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.ESCAPE:
+            tela_inicial = Tela_inicial()
+            self.window.show_view(tela_inicial)
+
+                
+class Tela_Sobre(arcade.View):
+    def __init__(self):
+            self.textura_fundo_sobre = arcade.load_texture("Tela_Sobre.png")
+            super().__init__ ()      
+    def on_draw(self):
+            self.clear()
+    
+            arcade.draw_texture_rect(
+                texture = self.textura_fundo_sobre,
+                rect=arcade.XYWH(
+                    x=Largura/2,
+                    y=Altura/2,
+                    width=Largura,
+                    height=Altura
+                )
+            )
+    def on_key_press(self, key, modifiers):
+            if key == arcade.key.ESCAPE:
+                tela_inicial = Tela_inicial()
+                self.window.show_view(tela_inicial)
+    
+               
         
+           
         
 
 #criar a tela inicial
@@ -178,6 +263,14 @@ class Tela_inicial(arcade.View):
         elif key == arcade.key.ESCAPE:
             
             arcade.close_window()
+        elif key == arcade.key.I:
+            tela_instrucoes = Tela_Instrucoes()
+            self.window.show_view(tela_instrucoes)
+        elif key == arcade.key.S:
+                    tela_sobre = Tela_Sobre()
+                    self.window.show_view(tela_sobre)
+
+        
 
 
 
@@ -193,6 +286,7 @@ class Telajogo(arcade.View):
          arcade.set_background_color(  (0, 0, 0)  )
         #definir movimento
          self.movimento = 5
+         
          #criar cromnometro
          self.cronometro = 0.0
          self.cronometro_rodando = True
@@ -208,6 +302,8 @@ class Telajogo(arcade.View):
          self.personagem.center_y = 0
          self.combustivel.center_x = 240
          self.combustivel.center_y = 80
+         self.bomba.center_x = 200
+         self.bomba.center_y = 55
          
          self.combustivel_especial.center_x = 50
          self.combustivel_especial.center_y = 60
@@ -217,6 +313,9 @@ class Telajogo(arcade.View):
         #fazer o personagem andar
          self.combustivel.change_x = self.movimento
          self.combustivel.change_y = self.movimento
+         #fazer bomba andar
+         self.bomba.change_x = self.movimento
+         self.bomba.change_y = self.movimento
          #criar pontuação do jogo
          self.pontuacao = 0
 
@@ -242,7 +341,7 @@ class Telajogo(arcade.View):
 
              self.sprite_inimigo.append(inimigo1)
 
-         for e in range(20):
+         for e in range(10):
              combustivelE_1 = Combustivel_Especial()
 
              combustivelE_1.center_x = random.randint(50, Largura - 50)
@@ -256,7 +355,7 @@ class Telajogo(arcade.View):
              self.sprite_combustivel_especial.append(combustivelE_1)
 
         #laço de repetição criar moedas(combustivel)
-         for i in range(10):  # quantidade de moedas
+         for i in range(25):  # quantidade de moedas
              combustivel1 = Combustivel()
 
              combustivel1.center_x = random.randint(50, Largura - 50)
@@ -267,11 +366,13 @@ class Telajogo(arcade.View):
 
              self.sprite_combustivel.append(combustivel1)
 
+        
+         
+
          for b in range(7): 
-            bomba1 = Bomba(self.textura_explosao) # Passa a textura para cada uma
-            bomba1.center_x = random.randint(50, 800 - 50)
-            bomba1.center_y = random.randint(50, 600 - 40)
-            
+            bomba1 = Bomba(self.textura_explosao)
+            bomba1.center_x = random.randint(50, Largura - 50)
+            bomba1.center_y = random.randint(50, Altura - 50)
             self.sprite_bomba.append(bomba1)
          
 
@@ -314,7 +415,7 @@ class Telajogo(arcade.View):
         arcade.draw_text(f"CRONÔMENTRO: {self.cronometro: .0f}s", 10, 550, arcade.color.WHITE, 14)
 
         #desenhar msg de dano
-        if self.mostrar_mensagem_dano:
+        if self.mensagem_dano:
             arcade.draw_text("DANIFICADO!", 350, 560, arcade.color.RED, 24, True, "center", font_name="Impact")
       
   
@@ -328,6 +429,7 @@ class Telajogo(arcade.View):
         
         self.sprite_inimigo.update(delta_time)
         self.sprite_combustivel_especial.update(delta_time)
+        self.sprite_bomba.update(delta_time)
 
         #fazer o combustivel sumir qnd o carrinho passar por ele
         combustivel_colidido = arcade.check_for_collision_with_list(self.personagem, self.sprite_combustivel)
@@ -337,15 +439,17 @@ class Telajogo(arcade.View):
             #aumentar pontuação qnd coletar combustivel
             self.pontuacao += 1
 
-        #fazera bomba sumir qnd o carrinho passar por ele
+        # Detecção de colisão com o McQueen
         bomba_colidida = arcade.check_for_collision_with_list(self.personagem, self.sprite_bomba)
         for b in bomba_colidida:
             if not b.explodindo:
                 b.explodindo = True
-                b.texture = b.textura_explosao # Transforma na imagem de explosão
-                self.pontuacao -= 3 # Retira pontuação 
+                b.texture = b.textura_explosao
+                self.pontuacao -= 1 
 
-         #fazera inimigo sumir qnd o carrinho passar por ele
+        
+
+         
         inimigo_colidido = arcade.check_for_collision_with_list(self.personagem, self.sprite_inimigo)
 
         for inimigo in self.sprite_inimigo:
@@ -403,10 +507,10 @@ class Telajogo(arcade.View):
 
 
         if len(self.sprite_combustivel_especial) == 0:
-            # 1. Criamos a tela de vitória passando a pontuação e o cronômetro atuais
+            # Cria a tela de vitória passando a pontuação e o cronômetro atuais
             tela_fim = Tela_vitoria(self.pontuacao, self.cronometro)
             
-            # 2. Mandamos a janela do jogo mudar para essa nova tela
+            #Manda a janela do jogo mudar para essa nova tela
             self.window.show_view(tela_fim)
             
         
@@ -429,7 +533,7 @@ class Telajogo(arcade.View):
             arcade.close_window()
 
 
-    #evento ao soltar as teclas, para ele parar de andar qnd a tecla for solta
+    #para ele parar de andar qnd a tecla for solta
     def on_key_release(self, key, modifiers):
         if (key == arcade.key.LEFT or key == arcade.key.RIGHT ):
             self.personagem.change_x = 0
