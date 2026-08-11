@@ -5,9 +5,16 @@ import random
 Altura = 600
 Largura = 800
 Titulo = "Meu Jogo"
+Gravidade = 0.5
+Forca = 16
 
 
-
+class Bloco(arcade.Sprite):
+    def __init__(self, x:float, y:float):
+        super().__init__("bloco.png", scale=1)
+        #definir posição inicial
+        self.center_x = x
+        self.center_y = y
 #criar personagem
 class Player(arcade.Sprite):
     def __init__(self):
@@ -329,6 +336,18 @@ class Telajogo(arcade.View):
          self.sprite_inimigo = arcade.SpriteList()
          self.sprite_combustivel_especial = arcade.SpriteList()
 
+         #criando os blocos
+         self.sprite_blocos = arcade.SpriteList()
+         for x in range(32, Largura + 32, 64): 
+            chao = Bloco(x=x, y=30)
+            self.sprite_blocos.append(chao)
+
+         posicoes_plataforma = [(300, 250), (550, 250)]
+         for x, y in posicoes_plataforma:
+             plataforma = Bloco(x, y)
+             self.sprite_blocos.append(plataforma)
+    
+
          for a in range(8):
              inimigo1 = Inimigo()
              inimigo1.center_x = random.randint(50, Largura - 50)
@@ -385,6 +404,13 @@ class Telajogo(arcade.View):
          self.sprite_inimigo.append(self.inimigo)
          self.sprite_combustivel_especial.append(self.combustivel_especial)
 
+         #mecânica de física
+         self.engine_fisica = arcade.PhysicsEnginePlatformer(
+             player_sprite=self.personagem,
+             walls=self.sprite_blocos,
+             gravity_constant=Gravidade
+         )
+
          self.mensagem_dano = False
          self.tempo_mensagem_dano = 0.0
          
@@ -409,6 +435,7 @@ class Telajogo(arcade.View):
         self.sprite_bomba.draw()
         self.sprite_inimigo.draw()
         self.sprite_combustivel_especial.draw()
+        self.sprite_blocos.draw()
 
         #escrever pontuação na tela
         arcade.draw_text(f"PONTUAÇÃO: {self.pontuacao}", 10, 570, arcade.color.WHITE, 14)
@@ -425,8 +452,11 @@ class Telajogo(arcade.View):
         #atualizar as listas de sprites, o que chama o método update 
         #Delta time é o tempo de execussão do jogo, para igualar em diferentes computadores
         self.sprite_jogador.update(delta_time)
+        #atualizar a fisica
+        self.engine_fisica.update()
         
-        
+        self.sprite_jogador.update(delta_time)
+        self.sprite_combustivel.update(delta_time)
         self.sprite_inimigo.update(delta_time)
         self.sprite_combustivel_especial.update(delta_time)
         self.sprite_bomba.update(delta_time)
@@ -469,7 +499,7 @@ class Telajogo(arcade.View):
                 # Perde pontos
                 self.pontuacao -= 1
 
-        if self.mostrar_mensagem_dano:
+        if self.tempo_mensagem_dano:
              self.tempo_mensagem_dano += delta_time
              if self.tempo_mensagem_dano >= 0.25: # 1 segundo de duração
                 self.mostrar_mensagem_dano = False
@@ -520,14 +550,15 @@ class Telajogo(arcade.View):
     def on_key_press(self, key, modifiers):
         #key = seta pressionada
         #
-        if (key == arcade.key.LEFT):
-            self.personagem.change_x -= self.movimento
-        if (key == arcade.key.RIGHT):
+        # Verifica a tecla pressionada e da o movimento no eixo certo
+        if(key == arcade.key.RIGHT):
             self.personagem.change_x += self.movimento
-        if (key == arcade.key.UP):
-            self.personagem.change_y += self.movimento
-        if(key == arcade.key.DOWN):
-           self.personagem.change_y -= self.movimento
+        elif(key == arcade.key.LEFT):
+            self.personagem.change_x -= self.movimento
+    # Nova mecânica do movimento no eixo Y, pulando
+        if key == arcade.key.UP or key == arcade.key.SPACE:
+         if self.engine_fisica.can_jump():
+            self.personagem.change_y = 16 # Força do pulo
 
         if(key == arcade.key.ESCAPE):
             arcade.close_window()
