@@ -57,7 +57,25 @@ class Player(arcade.Sprite):
 class Combustivel(arcade.Sprite):
     #O método init é o construtor, onde fica as caracteristicas do personagem (objeto)
     def __init__(self):
-        super().__init__("combustivel.png", scale= 0.10)  
+        super().__init__("combustivel.png", scale= 0.02) 
+
+    def update(self, delta_time):
+            #adicionar movimentação no eixo x e y
+           
+    
+            #parar o personagem antes dele sair da tela
+            
+            if(self.right > Largura):
+                self.change_x *= -1 #faz o efeito rebot, o pérsonagem bate na borda da tela e volta
+            elif(self.left < 0):
+                self.change_x *= -1
+            
+            if(self.top > Altura):
+                self.change_y *= -1
+            elif(self.bottom < 0):
+                self.change_y *= -1
+
+         
     
      
 
@@ -86,22 +104,20 @@ class Combustivel_Especial(arcade.Sprite):
             self.change_y *= -1
 
 class Inimigo(arcade.Sprite):
-    def __init__(self):
+    def __init__(self, personagem):
         super().__init__("inimigo.png", 0.08) 
-
+        self.personagem = personagem
+        self.movimento = 2.0
         self.atingido = False
 
     def update(self, delta_time):
-    #adicionar movimentação no eixo x e y
-        # Faz o inimigo se mover na tela 
-        self.center_x += self.change_x
-        self.center_y += self.change_y
+        # Perseguição no eixo X
+        if self.center_x < self.personagem.center_x: 
+            self.center_x += self.movimento
+        elif self.center_x > self.personagem.center_x: 
+            self.center_x -= self.movimento
 
-        #para rebater nas paredes 
-        if self.left < 0 or self.right > 800:
-            self.change_x *= -1
-        if self.bottom < 0 or self.top > 600:
-            self.change_y *= -1
+        
 
 
 
@@ -300,9 +316,11 @@ class Telajogo(arcade.View):
          
         #criar personagem
          self.personagem = Player()
+         self.inimigo = Inimigo(self.personagem)
+         
          self.combustivel = Combustivel()
          self.bomba = Bomba(self.textura_explosao)
-         self.inimigo = Inimigo()
+          
          self.combustivel_especial = Combustivel_Especial()
          #posicionar ele na tela
          self.personagem.center_x = 0
@@ -315,8 +333,8 @@ class Telajogo(arcade.View):
          self.combustivel_especial.center_x = 50
          self.combustivel_especial.center_y = 60
          #sumir da tela o personagem q tava atrapalhando (ignorar)
-         self.inimigo.center_x = -15
-         self.inimigo.center_y = -15
+         self.inimigo.center_x = 50
+         self.inimigo.center_y = 85
         #fazer o personagem andar
          self.combustivel.change_x = self.movimento
          self.combustivel.change_y = self.movimento
@@ -348,17 +366,7 @@ class Telajogo(arcade.View):
              self.sprite_blocos.append(plataforma)
     
 
-         for a in range(8):
-             inimigo1 = Inimigo()
-             inimigo1.center_x = random.randint(50, Largura - 50)
-             inimigo1.center_y = random.randint(50, Altura - 50)
-
-             inimigo1.change_x = random.choice([-2, 2])
-             inimigo1.change_y = random.choice([-2, 2])
-
-             
-
-             self.sprite_inimigo.append(inimigo1)
+         
 
          for e in range(10):
              combustivelE_1 = Combustivel_Especial()
@@ -388,7 +396,7 @@ class Telajogo(arcade.View):
         
          
 
-         for b in range(7): 
+         for b in range(4): 
             bomba1 = Bomba(self.textura_explosao)
             bomba1.center_x = random.randint(50, Largura - 50)
             bomba1.center_y = random.randint(50, Altura - 50)
@@ -499,10 +507,10 @@ class Telajogo(arcade.View):
                 # Perde pontos
                 self.pontuacao -= 1
 
-        if self.tempo_mensagem_dano:
+        if self.mensagem_dano:
              self.tempo_mensagem_dano += delta_time
              if self.tempo_mensagem_dano >= 0.25: # 1 segundo de duração
-                self.mostrar_mensagem_dano = False
+                self.mensagem_dano = False
 
         combustivelespecial_colidido = arcade.check_for_collision_with_list(self.personagem, self.sprite_combustivel_especial)
         for combustivel_especial in combustivelespecial_colidido:
