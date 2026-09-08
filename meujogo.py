@@ -1,5 +1,7 @@
 import arcade
 import random
+from peewee import *
+db = SqliteDatabase('ranking.db')
 
 #criar variáveis que serão bastante utilizadas
 Altura = 600
@@ -8,7 +10,11 @@ Titulo = "Meu Jogo"
 Gravidade = 0.5
 Forca = 16
 
+class BaseModel(Model):
+    class Meta:
+        database = db
 
+        
 class Bloco(arcade.Sprite):
     def __init__(self, x:float, y:float):
         super().__init__("bloco.png", scale=1)
@@ -18,6 +24,8 @@ class Bloco(arcade.Sprite):
 #criar personagem
 class Player(arcade.Sprite):
     def __init__(self):
+    
+
         super().__init__("mcqueen_direita.png", scale=0.10) 
         #adicionar textura conforme estiver para direita ou esquerda
         self.textura_direita = arcade.load_texture("mcqueen_direita.png")
