@@ -40,16 +40,14 @@ def exibir_menu():
 def main():
     while True:
         exibir_menu()
-        opcao = input("Escolha uma opção: ").strip()
-
+        opcao = input("Escolha uma opção: ")
         if opcao == "1":
             # --- CREATE ---
-            nome = input("Nome: ").strip()
-            telefone = input("Telefone: ").strip()
-            try:
-                contato.create(nome=nome, telefone=telefone)
+            nome = input("Nome: ")
+            telefone = input("Telefone: ")
+            if contato.create(nome=nome, telefone=telefone):
                 print(" Contato cadastrado com sucesso!")
-            except IntegrityError:
+            else:
                 print(" Erro: Já existe um contato com esse telefone.")
 
         elif opcao == "2":

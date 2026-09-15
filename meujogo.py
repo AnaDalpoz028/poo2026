@@ -1,5 +1,6 @@
 import arcade
 import random
+import datetime
 from peewee import *
 db = SqliteDatabase('ranking.db')
 
@@ -13,6 +14,20 @@ Forca = 16
 class BaseModel(Model):
     class Meta:
         database = db
+
+
+class pontuacao(BaseModel):
+    nome_jogador = CharField()
+    pontos = IntegerField()
+    tempo_partida = FloatField()
+    data_hora = DateTimeField(default=datetime.datetime.now)
+
+    def __str__(self):
+        return (f"{self.nome_jogador} - {self.pontos} - {self.tempo_partida}s")
+
+    db.connect()
+    db.create_tables([pontuacao])
+
 
         
 class Bloco(arcade.Sprite):
