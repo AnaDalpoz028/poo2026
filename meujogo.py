@@ -108,7 +108,7 @@ class Player(arcade.Sprite):
 class Combustivel(arcade.Sprite):
     #O método init é o construtor, onde fica as caracteristicas do personagem (objeto)
     def __init__(self):
-        super().__init__("combustivel.png", scale= 0.02) 
+        super().__init__("combustivel.png", scale= 0.08) 
 
     def update(self, delta_time):
             #adicionar movimentação no eixo x e y
