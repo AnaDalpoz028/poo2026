@@ -2,31 +2,38 @@ import arcade
 import random
 import datetime
 from peewee import *
+
 db = SqliteDatabase('ranking.db')
 
-#criar variáveis que serão bastante utilizadas
+# Criar variáveis que serão bastante utilizadas
 Altura = 600
 Largura = 800
 Titulo = "Meu Jogo"
 Gravidade = 0.5
 Forca = 16
 
+
 class BaseModel(Model):
     class Meta:
         database = db
 
 
-class pontuacao(BaseModel):
+class Pontuacao(BaseModel):
     nome_jogador = CharField()
     pontos = IntegerField()
     tempo_partida = FloatField()
     data_hora = DateTimeField(default=datetime.datetime.now)
 
     def __str__(self):
-        return (f"{self.nome_jogador} - {self.pontos} - {self.tempo_partida}s")
+        # Utilização de aspas triplas para texto multilinha limpo
+        return f"""Jogador: {self.nome_jogador}
+Pontos: {self.pontos}
+Tempo: {self.tempo_partida:.1f}s"""
 
-    db.connect()
-    db.create_tables([pontuacao])
+
+# Conexão e criação das tabelas FORA da classe (no nível principal)
+db.connect()
+db.create_tables([Pontuacao])
 
 
         
@@ -39,40 +46,61 @@ class Bloco(arcade.Sprite):
 #criar personagem
 class Player(arcade.Sprite):
     def __init__(self):
+
+
+        sheet_direita = arcade.load_spritesheet("player_direita.png")
+
+        quadros_direita = sheet_direita.get_texture_grid(size=(512, 512), columns=4, count=4 )
+        quadros_esquerda =  []
+        for frame in quadros_direita:
+            quadros_esquerda.append(frame.flip_left_right())
     
 
-        super().__init__("mcqueen_direita.png", scale=0.10) 
-        #adicionar textura conforme estiver para direita ou esquerda
-        self.textura_direita = arcade.load_texture("mcqueen_direita.png")
-        self.textura_esquerda = arcade.load_texture("mcqueen_esquerda1.png")
+        super().__init__(quadros_direita[0], scale=0.40)
+
+        self.center_x = 400
+        self.center_y = 300
+
+        self.texture_parado_d = quadros_direita[0]
+        self.texture_parado_e = quadros_esquerda[0]
+
+        self.passos_direita = [quadros_direita[1], quadros_direita[2]]
+        self.passos_esquerda = [quadros_esquerda[1], quadros_esquerda[2]]
+
+        self.textura_pulo_d = quadros_direita[3]
+        self.textura_pulo_e = quadros_esquerda[3]    
+
+        self.quadro_atual: int = 0
+        self.tempo_animacao: float = 0.0
+        self.virado_para: str = "DIREITA"
 
     #atualizar personagem
-    def update(self, delta_time):
-        #permitir movimentação do personagem
-        self.center_x += self.change_x
-        self.center_y += self.change_y
+    def update(self, delta_time, rate = 1/60):
 
-        #verificar a direção do movimento para mudar o personagem (esquerda e direita)
-        #se for zero, o personagem mantem a textura atual
-        if(self.change_x > 0):
-            self.texture = self.textura_direita
-        elif(self.change_x < 0):
-            self.texture = self.textura_esquerda
+        if self.change_x > 0:
+            self.virado_para = "DIREITA"
+        elif self.change_x < 0:
+            self.virado_para = "ESQUERDA"
 
-        #parar o personagem antes dele sair da tela
-        if(self.right > Largura):
-            self.change_x = 0
-            self.right = Largura
-        elif(self.left < 0):
-            self.change_x = 0
-            self.left = 0
+        if self.change_y != 0:
+            self.texture = self.textura_pulo_d if self.virado_para == "DIREITA" else self.textura_pulo_e
+            return
+
+        if self.change_x  == 0:
+            self.texture = self.texture_parado_d if self.virado_para == "DIREITA" else self.texture_parado_e
+            return
+
+        self.tempo_animacao += delta_time
+        if self.tempo_animacao >= 0.1:
+            self.tempo_animacao = 0.0
+            self.quadro_atual = (self.quadro_atual + 1) % len (self.passos_direita)
+
+            if self.virado_para == "DIREITA":
+                self.texture = self.passos_direita[self.quadro_atual]
+            else:
+                self.texture = self.passos_esquerda[self.quadro_atual]
         
-        if(self.top > Altura):
-            self.change_y = 0
-            self.top = Altura
-        elif(self.bottom < 0):
-            self.change_y = 0
-            self.bottom = 0
+            
 
 
      
@@ -205,6 +233,10 @@ class Tela_vitoria(arcade.View):
         self.pontuacao = pontuacao_final
         self.cronometro = tempo_final 
 
+        self.nome_jogador = ""
+        self.ja_salvou = False
+
+
     def on_draw(self):
         self.clear()
         arcade.draw_texture_rect(
@@ -225,12 +257,58 @@ class Tela_vitoria(arcade.View):
         if self.pontuacao >= 70:
             arcade.draw_text(f"PONTUAÇÃO MÁXIMA", 510, 170, arcade.color.WHITE, 18, 50,font_name="Courier New", bold=True)
 
+
+    def on_text(self, text):
+
+        if not self.ja_salvou and len(self.nome_jogador) < 10:
+            self.nome_jogador += text
+
     def on_key_press(self, key, modifiers):
-         if key ==arcade.key.J:
+
+        if not self.ja_salvou:
+            if key == arcade.key.BACKSPACE and len(self.nome_jogador) > 0:
+                self.nome_jogador = self.nome_jogador[:-1]
+            elif key == arcade.key.ENTER and len(self.nome_jogador.strip()) > 0:
+                # Grava no Banco de Dados SQLite usando o Peewee
+                Pontuacao.create(
+                    nome_jogador=self.nome_jogador.strip(),
+                    pontos=self.pontuacao,
+                    tempo_partida=self.cronometro
+                )
+                self.ja_salvou = True
+        if key ==arcade.key.J:
             novo_jogo = Telajogo()
             self.window.show_view(novo_jogo)
-         elif key == arcade.key.ESCAPE:
+        elif key == arcade.key.ESCAPE:
              arcade.close_window()
+
+class TelaRanking(arcade.View):
+    def __init__(self):
+        super().__init__()
+
+        self.melhores = list(
+            Pontuacao.select().order_by(Pontuacao.pontos.desc(), Pontuacao.tempo_partida.asc()).limit(10)
+        )
+
+
+    def on_draw(self):
+        arcade.draw_text("TOP 10 - RANKING DE PONTUAÇÕES", Largura / 2, 530, arcade.color.GOLD, 20, anchor_x="center", bold=True)
+
+        # Trata o caso em que o banco de dados ainda não possui registos
+        if len(self.melhores) == 0:
+            arcade.draw_text("Nenhuma pontuação registrada ainda!", Largura / 2, 300, arcade.color.WHITE, 16, anchor_x="center")
+        else:
+            y_pos = 460
+            for i, registro in enumerate(self.melhores):
+                texto = f"{i+1}º  {registro.nome_jogador:<10} - {registro.pontos} pts ({registro.tempo_partida:.1f}s)"
+                arcade.draw_text(texto, 220, y_pos, arcade.color.WHITE, 16, font_name="Courier New", bold=True)
+                y_pos -= 35
+
+        arcade.draw_text("Pressione [ESC] para voltar ao Menu Inicial", Largura / 2, 40, arcade.color.LIGHT_GRAY, 14, anchor_x="center")
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.ESCAPE:
+            self.window.show_view(Tela_inicial())
 
 class Tela_Instrucoes(arcade.View): 
     def __init__(self):
@@ -315,6 +393,9 @@ class Tela_inicial(arcade.View):
         elif key == arcade.key.S:
                     tela_sobre = Tela_Sobre()
                     self.window.show_view(tela_sobre)
+        elif key == arcade.key.R:  # ATALHO PARA O RANKING
+            tela_ranking = TelaRanking()
+            self.window.show_view(tela_ranking)
 
         
 
@@ -346,8 +427,8 @@ class Telajogo(arcade.View):
           
          self.combustivel_especial = Combustivel_Especial()
          #posicionar ele na tela
-         self.personagem.center_x = 0
-         self.personagem.center_y = 0
+         self.personagem.center_x = 400
+         self.personagem.center_y = 300
          self.combustivel.center_x = 240
          self.combustivel.center_y = 80
          self.bomba.center_x = 200
