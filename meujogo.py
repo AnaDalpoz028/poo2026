@@ -56,7 +56,7 @@ class Player(arcade.Sprite):
             quadros_esquerda.append(frame.flip_left_right())
     
 
-        super().__init__(quadros_direita[0], scale=0.40)
+        super().__init__(quadros_direita[0], scale=0.25)
 
         self.center_x = 400
         self.center_y = 300
@@ -156,7 +156,7 @@ class Combustivel_Especial(arcade.Sprite):
 
 class Inimigo(arcade.Sprite):
     def __init__(self, personagem):
-        super().__init__("inimigo.png", 0.08) 
+        super().__init__("inimigo.png", 0.18) 
         self.personagem = personagem
         self.movimento = 2.0
         self.atingido = False
@@ -438,7 +438,7 @@ class Telajogo(arcade.View):
          self.combustivel_especial.center_y = 60
          #sumir da tela o personagem q tava atrapalhando (ignorar)
          self.inimigo.center_x = 50
-         self.inimigo.center_y = 85
+         self.inimigo.center_y = 144
         #fazer o personagem andar
          self.combustivel.change_x = self.movimento
          self.combustivel.change_y = self.movimento
