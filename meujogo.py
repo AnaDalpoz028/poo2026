@@ -239,6 +239,8 @@ class Tela_vitoria(arcade.View):
 
     def on_draw(self):
         self.clear()
+        
+        # O fundo volta a usar Largura/2 e Altura/2 para centralizar corretamente
         arcade.draw_texture_rect(
             texture = self.textura_fundo_inicial,
             rect=arcade.XYWH(
@@ -246,18 +248,24 @@ class Tela_vitoria(arcade.View):
                 y=Altura/2,
                 width=Largura,
                 height=Altura
-
             )
         ) 
-
        
-        arcade.draw_text(f"PONTUAÇÃO: {self.pontuacao}", 510, 230, arcade.color.WHITE, 18, 50,font_name="Courier New", bold=True)
-        arcade.draw_text(f"TEMPO: {self.cronometro: .0f}s", 510, 200, arcade.color.WHITE, 18, 50,font_name="Courier New", bold=True) 
+        # 1. Informações do Jogo (No topo)
+        arcade.draw_text(f"PONTUAÇÃO: {self.pontuacao}", 510, 260, arcade.color.WHITE, 18, font_name="Courier New", bold=True)
+        arcade.draw_text(f"TEMPO: {self.cronometro: .0f}s", 510, 230, arcade.color.WHITE, 18, font_name="Courier New", bold=True) 
 
+        # 2. Mensagem especial caso atinja 70 pontos (No meio)
         if self.pontuacao >= 70:
-            arcade.draw_text(f"PONTUAÇÃO MÁXIMA", 510, 170, arcade.color.WHITE, 18, 50,font_name="Courier New", bold=True)
+            arcade.draw_text("PONTUAÇÃO MÁXIMA!", 510, 200, arcade.color.GOLD, 18, font_name="Courier New", bold=True)
 
-
+        # 3. Inserção de Nome e Gravação (Mais para baixo)
+        if not self.ja_salvou:
+            arcade.draw_text(f"NOME: {self.nome_jogador}_", 510, 140, arcade.color.YELLOW, 18, font_name="Courier New", bold=True)
+            arcade.draw_text("Aperte ENTER para Salvar", 510, 110, arcade.color.WHITE, 12, font_name="Courier New")
+        else:
+            arcade.draw_text("SALVO COM SUCESSO!", 510, 140, arcade.color.GREEN, 18, font_name="Courier New", bold=True)
+            arcade.draw_text("[J] Jogar | [ESC] Sair", 510, 110, arcade.color.WHITE, 12, font_name="Courier New")
     def on_text(self, text):
 
         if not self.ja_salvou and len(self.nome_jogador) < 10:
@@ -276,6 +284,14 @@ class Tela_vitoria(arcade.View):
                     tempo_partida=self.cronometro
                 )
                 self.ja_salvou = True
+        else:
+            # 2. SÓ DEIXAR SAIR OU REJOGAR DEPOIS DE SALVAR
+            if key == arcade.key.J:
+                novo_jogo = Telajogo()
+                self.window.show_view(novo_jogo)
+            elif key == arcade.key.ESCAPE:
+                arcade.close_window()
+                
         if key ==arcade.key.J:
             novo_jogo = Telajogo()
             self.window.show_view(novo_jogo)
@@ -285,6 +301,7 @@ class Tela_vitoria(arcade.View):
 class TelaRanking(arcade.View):
     def __init__(self):
         super().__init__()
+        self.textura_fundo_inicial = arcade.load_texture("telaranking.png")
 
         self.melhores = list(
             Pontuacao.select().order_by(Pontuacao.pontos.desc(), Pontuacao.tempo_partida.asc()).limit(10)
@@ -292,6 +309,7 @@ class TelaRanking(arcade.View):
 
 
     def on_draw(self):
+        self.clear()
         arcade.draw_text("TOP 10 - RANKING DE PONTUAÇÕES", Largura / 2, 530, arcade.color.GOLD, 20, anchor_x="center", bold=True)
 
         # Trata o caso em que o banco de dados ainda não possui registos
