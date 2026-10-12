@@ -176,7 +176,7 @@ class Bomba(arcade.Sprite):
     def __init__(self, textura_explosao):
         # Carrega a textura inicial
         self.textura_normal = arcade.load_texture("bomba.png")
-        super().__init__(self.textura_normal, scale=0.09) 
+        super().__init__(self.textura_normal, scale=0.15) 
         
         self.textura_explosao = textura_explosao
         self.explodindo = False
@@ -310,6 +310,15 @@ class TelaRanking(arcade.View):
 
     def on_draw(self):
         self.clear()
+        arcade.draw_texture_rect(
+            texture = self.textura_fundo_inicial,
+            rect=arcade.XYWH(
+                x=Largura/2,
+                y=Altura/2,
+                width=Largura,
+                height=Altura
+            )
+        )
         arcade.draw_text("TOP 10 - RANKING DE PONTUAÇÕES", Largura / 2, 530, arcade.color.GOLD, 20, anchor_x="center", bold=True)
 
         # Trata o caso em que o banco de dados ainda não possui registos
@@ -425,6 +434,8 @@ class Telajogo(arcade.View):
     def __init__(self):
          self.textura_fundo = arcade.load_texture("cenario.jpg")
          self.textura_explosao = arcade.load_texture("explosao.png")
+
+         self.pulos_dados = 0
          
          super().__init__()
          #cor RGB (vermelho, verde, azul)
@@ -518,7 +529,7 @@ class Telajogo(arcade.View):
         
          
 
-         for b in range(4): 
+         for b in range(3): 
             bomba1 = Bomba(self.textura_explosao)
             bomba1.center_x = random.randint(50, Largura - 50)
             bomba1.center_y = random.randint(50, Altura - 50)
@@ -584,6 +595,14 @@ class Telajogo(arcade.View):
         self.sprite_jogador.update(delta_time)
         #atualizar a fisica
         self.engine_fisica.update()
+
+        if self.engine_fisica.can_jump():
+            self.pulos_dados = 0
+
+        if self.personagem.left < 0:
+            self.personagem.left = 0
+        elif self.personagem.right > Largura:
+            self.personagem.right = Largura
         
         self.sprite_jogador.update(delta_time)
         self.sprite_combustivel.update(delta_time)
@@ -678,19 +697,23 @@ class Telajogo(arcade.View):
 
     #gerenciar o teclado (teclas pressionadas)
     def on_key_press(self, key, modifiers):
-        #key = seta pressionada
-        #
-        # Verifica a tecla pressionada e da o movimento no eixo certo
-        if(key == arcade.key.RIGHT):
+        if key == arcade.key.RIGHT:
             self.personagem.change_x += self.movimento
-        elif(key == arcade.key.LEFT):
+        elif key == arcade.key.LEFT:
             self.personagem.change_x -= self.movimento
-    # Nova mecânica do movimento no eixo Y, pulando
-        if key == arcade.key.UP or key == arcade.key.SPACE:
-         if self.engine_fisica.can_jump():
-            self.personagem.change_y = 16 # Força do pulo
 
-        if(key == arcade.key.ESCAPE):
+        # NOVA MECÂNICA COM PULO DUPLO
+        if key == arcade.key.UP or key == arcade.key.SPACE:
+            if self.engine_fisica.can_jump():
+                # Primeiro pulo (no chão)
+                self.personagem.change_y = 16 
+                self.pulos_dados = 1
+            elif self.pulos_dados == 1:
+                # Segundo pulo (no ar)
+                self.personagem.change_y = 16 
+                self.pulos_dados = 2
+
+        if key == arcade.key.ESCAPE:
             arcade.close_window()
 
 
