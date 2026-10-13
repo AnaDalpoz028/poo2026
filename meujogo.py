@@ -256,7 +256,7 @@ class Tela_vitoria(arcade.View):
         arcade.draw_text(f"TEMPO: {self.cronometro: .0f}s", 510, 230, arcade.color.WHITE, 18, font_name="Courier New", bold=True) 
 
         # 2. Mensagem especial caso atinja 70 pontos (No meio)
-        if self.pontuacao >= 75:
+        if self.pontuacao >= 76:
             arcade.draw_text("PONTUAÇÃO MÁXIMA!", 510, 200, arcade.color.GOLD, 18, font_name="Courier New", bold=True)
 
         # 3. Inserção de Nome e Gravação (Mais para baixo)
@@ -297,6 +297,9 @@ class Tela_vitoria(arcade.View):
             self.window.show_view(novo_jogo)
         elif key == arcade.key.ESCAPE:
              arcade.close_window()
+        elif key == arcade.key.R:
+            telaranking = TelaRanking()
+            self.window.show_view(telaranking)
 
 class TelaRanking(arcade.View):
     def __init__(self):
@@ -529,7 +532,7 @@ class Telajogo(arcade.View):
         
          
 
-         for b in range(3): 
+         for b in range(2): 
             bomba1 = Bomba(self.textura_explosao)
             bomba1.center_x = random.randint(50, Largura - 50)
             bomba1.center_y = random.randint(50, Altura - 50)
