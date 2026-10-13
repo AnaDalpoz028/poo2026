@@ -257,7 +257,7 @@ class Tela_vitoria(arcade.View):
 
         # 2. Mensagem especial caso atinja 70 pontos (No meio)
         if self.pontuacao >= 76:
-            arcade.draw_text("PONTUAÇÃO MÁXIMA!", 510, 200, arcade.color.GOLD, 18, font_name="Courier New", bold=True)
+            arcade.draw_text("ÓTIMA PONTUAÇÃO!", 510, 200, arcade.color.GOLD, 18, font_name="Courier New", bold=True)
 
         # 3. Inserção de Nome e Gravação (Mais para baixo)
         if not self.ja_salvou:
